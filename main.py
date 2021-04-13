@@ -16,7 +16,10 @@ def principal():
             listgrval=citireTastatura(n)
         if (x == "2"):
             numfis=input("numele fisierului")
-            n, listgrval,grGhiozdan=citireFisier(numfis)
+            try:
+                n, listgrval,grGhiozdan=citireFisier(numfis)
+            except:
+                print("No such file")
         if (x == "3"):
             populationNR=int(input("population number:"))
             k=int(input("cate elemente random pentru turnir se aleg"))
@@ -27,9 +30,7 @@ def principal():
             print("--- %s seconds ---" % (time.time() - start_time))
             i=topRulari.index(valMaxima(topRulari))+1
             vect=citesteVectorTuple("listeGeneratii.txt",i)
-            print(topRulari)
-            print(i)
-            print(vect)
+            print(topRulari[i])
             avg=list()
             best=list()
             for i in range(len(vect)):
@@ -70,16 +71,58 @@ def principal():
             plt.legend(loc='upper center', bbox_to_anchor=(0.5, -0.05), shadow=True, ncol=2)
             plt.show()
         if x=="5":
+            populationNR = int(input("population number:"))
+            nrGeneratii = int(input("Cate generatii sa fie:"))
+            nrRulari = int(input("Cate rulari:"))
+            start_time = time.time()
+            topRulari = list(evolutionaryA2(populationNR, n, nrGeneratii, listgrval, grGhiozdan, nrRulari))
+            print("--- %s seconds ---" % (time.time() - start_time))
+            i = topRulari.index(valMaxima(topRulari)) + 1
+            vect = citesteVectorTuple("listeGeneratii.txt", i)
+            print(topRulari[i])
+            avg = list()
+            best = list()
+            for i in range(len(vect)):
+                avg.append(float(vect[i][1]))
+                best.append(float(vect[i][0]))
+            plt.figure()
+            plt.title("PB. Rucsac din fisierul " + numfis)
+            plt.plot(avg, 'r', label="Valoarea medie")
+            plt.plot(best, 'g', label="Valoarea cea mai buna")
+            plt.legend(loc='upper center', bbox_to_anchor=(0.5, -0.05), shadow=True, ncol=2)
+            plt.show()
+        if x=="6":
+
             matrice = memorieDistante(listgrval)
-            populationNR = 10
-            popul=generatePopulationTSP(populationNR,n)
-            parens=turnirSelectionTSP(popul,matrice,3)
-            for i in parens:
-                print(evalTsp(i,matrice))
-            print(parens)
-            kids=parentsCrossoverTSP(popul)
-            print(kids)
+            populationNR = int(input("population number:"))
+            k = int(input("cate elemente random pentru turnir se aleg"))
+            nrGeneratii = int(input("Cate generatii sa fie:"))
+            nrRulari = int(input("Cate rulari:"))
+            start_time = time.time()
+            topRulari = list(evolutionaryTSP2(populationNR, n, nrGeneratii, matrice, nrRulari, k))
+            print("--- %s seconds ---" % (time.time() - start_time))
+
+            i = topRulari.index(valMinima(topRulari))
+            vect = citesteVectorTuple("TSP.txt", i)
+            print(topRulari[i])
+
+            avg = list()
+            best = list()
+            for i in range(len(vect)):
+                avg.append(float(vect[i][1]))
+                best.append(float(vect[i][0]))
+            plt.figure()
+            plt.title("PB. TSP din fisierul " + numfis)
+            plt.plot(avg, 'r', label="Valoarea medie")
+            plt.plot(best, 'g', label="Valoarea cea mai buna")
+            plt.xlabel("Nr Generatii")
+            plt.ylabel("Valoarea")
+            plt.legend(loc='upper center', bbox_to_anchor=(0.5, -0.05), shadow=True, ncol=2)
+            plt.show()
+
         if (x == "0"):
             print("codul s-a terminat cu succes")
 
 principal()
+
+

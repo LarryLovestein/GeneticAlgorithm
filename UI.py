@@ -14,15 +14,20 @@ def citireTastatura(n):
     return listgrval
 
 def citireFisier(numefis):
-    listgrval=list()#o lista de tuple (greutate, valoare)
-    f=open(numefis,"r")
-    n=int(f.readline())
-    for i in range(n):
-        line=f.readline()
-        listgrval.append((int(line.split()[1]),int(line.split()[2])))
-    greutateGhiozdan=int(f.readline())
-    f.close()
-    return n, listgrval,greutateGhiozdan # n=nr de el, listgrval(tuplu de greutate si valoare)
+    try:
+
+        listgrval=list()#o lista de tuple (greutate, valoare)
+        f=open(numefis,"r")
+        n=int(f.readline())
+        for i in range(n):
+            line=f.readline()
+            listgrval.append((int(line.split()[1]),int(line.split()[2])))
+        greutateGhiozdan=int(f.readline())
+    except:
+        print ("Error: can\'t find file or read data")
+    else:
+        f.close()
+        return n, listgrval,greutateGhiozdan # n=nr de el, listgrval(tuplu de greutate si valoare)
 
 def scrieVectorTuple(numefis,lista):
     f=open(numefis,"a")

@@ -95,6 +95,24 @@ def turnirSelection(population,listgrval,k):#Asta o sa fie folosita pentru selec
         i+=1
     return bestParents
 
+def propSelection(population,listgrval,greutateGhiozdan):
+    suma=0
+    listPb=list()
+    bestParents=list()
+    for i in population:
+        suma+=verificareGhiozdan(listgrval,greutateGhiozdan,i)
+    prevPb=0.0
+    for i in population:
+        listPb.append((prevPb,prevPb+float(verificareGhiozdan(listgrval,greutateGhiozdan,i)/suma)))
+        prevPb=prevPb +float(verificareGhiozdan(listgrval,greutateGhiozdan,i)/suma)
+    for i in range(len(population)):
+        pb=random.uniform(0,1)
+        for j in listPb:
+            if pb>=j[0] and pb<j[1]:
+                bestParents.append(population[listPb.index(j)])
+                break
+    return bestParents
+
 
 
 def onePointCrossover(parent1, parent2):
@@ -163,6 +181,11 @@ def selectSurvivors(allPeople,listgrval,populationNR): # din lista tuturor perso
         bestOfAll.append(selectiaTurnir[i])
     return bestOfAll
 
+def selectElitism(allPeople,populationNR):
+    bestOfAll=list()
+    for i in range(populationNR):
+        bestOfAll.append(allPeople[i])
+    return bestOfAll
 
 def sortAllPeople(allPeople,listgrval):
     allPeople.sort(key=lambda x: detValoare(x,listgrval), reverse=True)
@@ -210,3 +233,36 @@ def evolutionaryA(populationNR, n,nrGeneratii, listgrval, greutateGhiozda,nrRula
         i+=1
     return toateRularile
 
+'''
+A doua varianta de AG
+'''
+
+
+def evolutionaryA2(populationNR, n,nrGeneratii, listgrval, greutateGhiozda,nrRulari):
+    f = open("listeGeneratii.txt", "w")
+    f.write("")
+    f.close()
+    i=0
+    toateRularile=list()
+    while i<nrRulari:
+        populatie=generatePopulation(populationNR,n,listgrval,greutateGhiozda)
+        listaCuValAVG=list()
+        bestOne,avg=bestAvgPopulation(populatie,listgrval)
+        listaCuValAVG.append((float(detValoare(bestOne,listgrval)),avg))
+        t=1
+        while t < nrGeneratii:
+            parents=propSelection(populatie,listgrval,greutateGhiozda) #se selecteaza parintii
+            kids=parentsCrossover(parents,listgrval,greutateGhiozda) #se genereaza copii
+            kidsM=mutationKids(kids,listgrval,greutateGhiozda)# se fac mutatile la copii
+            allPeople=parents+kids+kidsM    #se formeaza o noua populatie
+            allPeople=sortAllPeople(allPeople,listgrval) # se sorteaza dupa fitness
+            populatie=selectElitism(allPeople,populationNR) #se face selectia populatiei
+            bestOne, avg = bestAvgPopulation(populatie, listgrval) #se determina cel mai bun individ din populatie si avg
+            listaCuValAVG.append( (float(detValoare(bestOne,listgrval)), avg))    #se adauga in vectorul specific pe care il scriu in fisier
+            t+=1#Creste numarul de generatii
+            #print(listaCuValAVG)
+        scrieVectorTuple("listeGeneratii.txt",listaCuValAVG)#scriem intr-un fisier vectorul de best/avg pentru fiecare generatie pentru plot
+        #adaugam in toateRularile bestul si Avg ultimei populatii pentru a putea determina bestul din n rulari
+        toateRularile.append(listaCuValAVG[len(listaCuValAVG)-1])
+        i+=1
+    return toateRularile

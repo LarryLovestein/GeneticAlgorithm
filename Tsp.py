@@ -117,8 +117,46 @@ def PMX(parinte1, parinte2):
 '''popul=generatePopulationTSP(2,9)
 print(PMX(popul[0],popul[1]))'''
 
+def OX(parinte1, parinte2):
+    kid1=[0]*len(parinte1)
+    kid2=[0]*len(parinte1)
+    pctTaietura=sorted(np.random.default_rng().choice(range(1,len(parinte1)-1), size=2, replace=False))
+    ordine1=list()
+    ordine2=list()
+    for i in range(-len(parinte1)+pctTaietura[1],pctTaietura[1]):
+        ordine1.append(parinte1[i])
+        ordine2.append(parinte2[i])
+    kid1[pctTaietura[0]:pctTaietura[1]]=parinte2[pctTaietura[0]:pctTaietura[1]]
+    kid2[pctTaietura[0]:pctTaietura[1]]=parinte1[pctTaietura[0]:pctTaietura[1]]
+    for i in kid1:
+        if i in ordine1:
+            ordine1.remove(i)
+    j=0
+    for i in range(-len(parinte1)+pctTaietura[1],pctTaietura[0]):
+        kid1[i]=ordine1[j]
+        j+=1
 
+    for i in kid2:
+        if i in ordine2:
+            ordine2.remove(i)
+    j=0
+    for i in range(-len(parinte1)+pctTaietura[1],pctTaietura[0]):
+        kid2[i]=ordine2[j]
+        j+=1
 
+    return kid1,kid2
+
+def parentsCrossoverTSPOX(bestParents):
+    kids=list()
+    i=0
+    while i < len(bestParents)-1:
+        kid1,kid2=OX(bestParents[i],bestParents[i+1])
+        kids.append(kid1)
+        kids.append(kid2)
+        if len(kids) > len(bestParents):
+            break
+        i+=1
+    return kids
 
 
 def parentsCrossoverTSP(bestParents):
@@ -139,6 +177,26 @@ def mutatieTSP(kid):
         randomtwo = np.random.default_rng().choice(range(1,len(kid)), size=2, replace=False)
         copie[randomtwo[0]], copie[randomtwo[1]] = copie[randomtwo[1]], copie[randomtwo[0]]
     return copie
+
+def scrambleMutation(kid):
+    copie=kid.copy()
+    randomtwo = sorted(np.random.default_rng().choice(range(1, len(kid)), size=2, replace=False))
+    omleta=copie[randomtwo[0]:randomtwo[1]]
+    random.shuffle(omleta)
+    copie[randomtwo[0]:randomtwo[1]]=omleta[:]
+    return copie
+
+def mutationKidsTSPscr(kids):
+    mutated=kids.copy()
+    n=len(mutated)
+    i=0
+    while i < n:
+        copiemutated=mutated[i].copy()
+        m=scrambleMutation(copiemutated)
+        mutated[i]=m.copy()
+        i+=1
+    return mutated
+
 def mutationKidsTSP(kids):
     mutated=kids.copy()
     n=len(mutated)
@@ -206,6 +264,38 @@ def evolutionaryTSP(populationNR, n,nrGeneratii, matrice,nrRulari,k):
         toateRularile.append(listaCuValAVG[len(listaCuValAVG)-1])
         i+=1
     return toateRularile
+
+
+def evolutionaryTSP2(populationNR, n,nrGeneratii, matrice,nrRulari,k):
+    f = open("TSP.txt", "w")
+    f.write("")
+    f.close()
+    i=0
+    toateRularile=list()
+    while i<nrRulari:
+        populatie=generatePopulationTSP(populationNR,n)
+        listaCuValAVG=list()
+        bestOne,avg=bestAvgPopulationTSP(populatie,matrice)
+        listaCuValAVG.append((float(evalTsp(bestOne,matrice)),avg))
+        t=1
+        while t < nrGeneratii:
+            parents=turnirSelectionTSP(populatie,matrice,k) #se selecteaza parintii
+            kids=parentsCrossoverTSPOX(parents) #se genereaza copii
+            kidsM=mutationKidsTSPscr(kids)# se fac mutatile la copii
+            allPeople=parents+kids+kidsM    #se formeaza o noua populatie
+            allPeople=sortAllPeopleTSP(allPeople,matrice) # se sorteaza dupa fitness
+            populatie=selectSurvivorsTSP(allPeople,matrice,populationNR) #se face selectia populatiei
+            bestOne, avg = bestAvgPopulationTSP(populatie, matrice) #se determina cel mai bun individ din populatie si avg
+            listaCuValAVG.append( (float(evalTsp(bestOne,matrice)), avg))    #se adauga in vectorul specific pe care il scriu in fisier
+            t+=1#Creste numarul de generatii
+            #print(listaCuValAVG)
+        scrieVectorTuple("TSP.txt",listaCuValAVG)#scriem intr-un fisier vectorul de best/avg pentru fiecare generatie pentru plot
+        #adaugam in toateRularile bestul si Avg ultimei populatii pentru a putea determina bestul din n rulari
+        toateRularile.append(listaCuValAVG[len(listaCuValAVG)-1])
+        i+=1
+    return toateRularile
+
+
 
 '''
 EVIDENT CA NU MERGE PENTRU MINIMAZRE...BOGDAN...
